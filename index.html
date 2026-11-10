@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orientación · Canalizaciones</title>
+<style>
+:root{
+  --vino:#4E0F22; --borgona:#7A1F3D; --rosa:#B5586F; --hueso:#F8F2F3; --linea:#E3D2D6;
+  --tinta:#2B1219; --suave:#7C6168; --blanco:#fff; --ok:#2F6B4F;
+  --serif:Georgia,"Times New Roman",serif; --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.5 var(--sans);color:var(--tinta);background:var(--hueso);display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+aside{background:var(--vino);color:#F3DDE3;padding:28px 18px;position:sticky;top:0;height:100vh}
+aside h1{font:700 21px/1.2 var(--serif);margin:0 0 4px;color:#fff}
+aside p{margin:0 0 28px;font-size:13px;color:#D3A9B5}
+nav button{display:block;width:100%;text-align:left;background:none;border:0;border-left:3px solid transparent;color:#EBCDD5;padding:11px 12px;font:inherit;cursor:pointer;border-radius:0 6px 6px 0}
+nav button:hover{background:rgba(255,255,255,.07)}
+nav button[aria-selected=true]{border-left-color:#E7B7C4;background:rgba(255,255,255,.12);color:#fff;font-weight:600}
+main{padding:34px 40px 60px;max-width:1100px;width:100%}
+h2{font:700 26px/1.2 var(--serif);color:var(--vino);margin:0 0 6px}
+.lead{color:var(--suave);margin:0 0 24px}
+section[hidden]{display:none}
+.panel{background:var(--blanco);border:1px solid var(--linea);border-radius:10px;padding:22px;margin-bottom:18px}
+.panel h3{font:600 17px var(--serif);margin:0 0 14px;color:var(--borgona)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+label{display:block;font-size:13px;font-weight:600;color:var(--suave);margin-bottom:4px}
+input,textarea,select{width:100%;font:inherit;padding:9px 11px;border:1px solid #CDB3BA;border-radius:6px;background:#fff;color:var(--tinta)}
+textarea{min-height:76px;resize:vertical}
+input:focus,textarea:focus{outline:3px solid rgba(122,31,61,.25);border-color:var(--borgona)}
+.span2{grid-column:span 2}.full{grid-column:1/-1}
+.control{position:relative;max-width:420px}
+.control input{font:600 22px var(--serif);padding:12px 14px;letter-spacing:.03em;border:2px solid var(--borgona)}
+.sug{position:absolute;left:0;right:0;top:100%;background:#fff;border:1px solid var(--borgona);border-top:0;border-radius:0 0 8px 8px;z-index:5;box-shadow:0 8px 20px rgba(78,15,34,.18)}
+.sug div{padding:9px 14px;cursor:pointer;display:flex;justify-content:space-between;gap:12px}
+.sug div:hover,.sug div.on{background:#F4E4E8}
+.sug small{color:var(--suave)}
+.estado{margin-top:10px;font-size:14px;min-height:21px}
+.estado.ok{color:var(--ok)} .estado.nuevo{color:var(--borgona)}
+.btn{background:var(--borgona);color:#fff;border:0;padding:10px 20px;border-radius:6px;font:600 15px var(--sans);cursor:pointer;text-decoration:none;display:inline-block}
+.btn:hover{background:var(--vino)}
+.btn.sec{background:#fff;color:var(--borgona);border:1px solid var(--borgona)}
+.btn.sec:hover{background:#F4E4E8}
+.acciones{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.tabla{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{background:var(--vino);color:#fff;text-align:left;padding:9px 10px;font-weight:600;white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--linea);vertical-align:top}
+tr:nth-child(even) td{background:#FBF7F8}
+.vacio{padding:26px;text-align:center;color:var(--suave)}
+.msg{padding:12px 14px;border-radius:6px;margin-top:14px;background:#F4E4E8;border-left:4px solid var(--borgona)}
+.aviso{position:fixed;right:24px;bottom:24px;background:var(--vino);color:#fff;padding:12px 18px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+@media(max-width:800px){body{grid-template-columns:1fr}aside{position:static;height:auto;padding:16px}main{padding:20px}nav{display:flex;gap:4px;flex-wrap:wrap}nav button{width:auto;border-left:0;border-bottom:3px solid transparent;border-radius:0}nav button[aria-selected=true]{border-bottom-color:#E7B7C4}.span2{grid-column:auto}}
+</style>
+</head>
+<body>
+<aside>
+  <h1>Departamento de Orientación</h1>
+  <p>Canalizaciones de alumnos</p>
+  <nav role="tablist">
+    <button role="tab" aria-selected="true" data-vista="registrar">Registrar canalización</button>
+    <button role="tab" aria-selected="false" data-vista="consultar">Consultar y filtrar</button>
+    <button role="tab" aria-selected="false" data-vista="importar">Importar hoja de cálculo</button>
+  </nav>
+  <div style="position:absolute;left:18px;right:18px;bottom:24px;font-size:13px;color:#D3A9B5">
+    Sesión: <b style="color:#fff">{{ usuario }}</b><br><a href="/logout" style="color:#F3DDE3">Cerrar sesión</a>
+  </div>
+</aside>
+
+<main>
+<!-- REGISTRAR -->
+<section id="registrar">
+  <h2>Registrar canalización</h2>
+  <p class="lead">Escribe el número de control: los datos del alumno se completan solos.</p>
+  <div class="panel">
+    <label for="numero_control">Número de control</label>
+    <div class="control">
+      <input id="numero_control" autocomplete="off" inputmode="numeric" placeholder="Ej. 0123456789012">
+      <div class="sug" id="sug" hidden></div>
+    </div>
+    <div class="estado" id="estado"></div>
+  </div>
+  <form id="form" class="panel" autocomplete="off">
+    <h3>Datos del alumno</h3>
+    <div class="grid">
+      <div><label>Apellido paterno</label><input name="apellido_paterno"></div>
+      <div><label>Apellido materno</label><input name="apellido_materno"></div>
+      <div><label>Nombre(s)</label><input name="nombre"></div>
+      <div><label>Generación</label><input name="generacion" placeholder="2023-2026"></div>
+      <div><label>Especialidad</label><input name="especialidad"></div>
+      <div><label>Semestre</label><input name="semestre"></div>
+      <div><label>Grupo</label><input name="grupo"></div>
+      <div><label>Grado</label><input name="grado"></div>
+      <div><label>Turno</label><select name="turno"><option value=""></option><option>Matutino</option><option>Vespertino</option></select></div>
+      <div class="span2"><label>Nombre de padre o madre</label><input name="nombre_padre_madre"></div>
+      <div><label>Teléfono</label><input name="telefono" inputmode="tel"></div>
+    </div>
+    <h3 style="margin-top:24px">Atención</h3>
+    <div class="grid">
+      <div><label>Fecha de atención</label><input type="date" name="fecha_atencion"></div>
+      <div class="span2"><label>Persona que reporta</label><input name="persona_reporta"></div>
+      <div><label>Canalizaciones anteriores</label><input name="canalizaciones_anteriores" readonly></div>
+      <div class="full"><label>Motivo</label><textarea name="motivo"></textarea></div>
+      <div class="full"><label>Medida de modificación de conducta</label><textarea name="medida_modificacion_conducta"></textarea></div>
+      <div class="full"><label>Seguimiento de los documentos</label><textarea name="seguimiento_documentos"></textarea></div>
+    </div>
+    <div class="acciones">
+      <button class="btn" type="submit">Guardar canalización</button>
+      <a class="btn sec" id="pdfNuevo" hidden>Descargar PDF</a>
+    </div>
+  </form>
+</section>
+
+<!-- CONSULTAR -->
+<section id="consultar" hidden>
+  <h2>Consultar y filtrar</h2>
+  <p class="lead">Combina los filtros que necesites; los campos vacíos se ignoran.</p>
+  <form id="filtros" class="panel">
+    <div class="grid">
+      <div><label>Número de control</label><input name="numero_control"></div>
+      <div><label>Apellido paterno</label><input name="apellido_paterno"></div>
+      <div><label>Generación</label><input name="generacion"></div>
+      <div><label>Especialidad</label><input name="especialidad"></div>
+      <div><label>Semestre</label><input name="semestre"></div>
+      <div><label>Grupo</label><input name="grupo"></div>
+      <div><label>Turno</label><input name="turno"></div>
+      <div><label>Desde</label><input type="date" name="desde"></div>
+      <div><label>Hasta</label><input type="date" name="hasta"></div>
+    </div>
+    <div class="acciones">
+      <button class="btn" type="submit">Filtrar</button>
+      <button class="btn sec" type="button" id="limpiar">Limpiar</button>
+      <a class="btn sec" id="pdfLote">Descargar PDF de los resultados</a>
+    </div>
+  </form>
+  <div class="panel tabla" id="resultados"></div>
+</section>
+
+<!-- IMPORTAR -->
+<section id="importar" hidden>
+  <h2>Importar hoja de cálculo</h2>
+  <p class="lead">Sube un archivo .xls o .xlsx. Se convierte a JSON y se carga a la base; si repites la carga, no se duplican registros.</p>
+  <form id="formImp" class="panel">
+    <label for="archivo">Archivo</label>
+    <input type="file" id="archivo" name="archivo" accept=".xls,.xlsx">
+    <div class="acciones"><button class="btn" type="submit">Importar archivo</button></div>
+    <div id="msgImp"></div>
+  </form>
+  <div class="panel">
+    <h3>Columnas que reconoce</h3>
+    <p style="margin:0">Número de control, Fecha de atención, Apellido paterno, Apellido materno, Nombre, Generación, Especialidad, Semestre, Grupo, Grado, Turno, Persona que reporta, Motivo, Nombre de padre o madre, Teléfono, Medida de modificación de conducta y Seguimiento de los documentos.</p>
+  </div>
+</section>
+</main>
+
+<script>
+// Si la sesión vence, regresa al inicio de sesión
+const _fetch = window.fetch;
+window.fetch = async (...a) => { const r = await _fetch(...a); if (r.status === 401) location.href = "/login"; return r; };
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const esc = t => String(t ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const aviso = t => { const a = document.createElement("div"); a.className = "aviso"; a.textContent = t; document.body.append(a); setTimeout(() => a.remove(), 3200); };
+
+// Navegación
+$$("nav button").forEach(b => b.onclick = () => {
+  $$("nav button").forEach(x => x.setAttribute("aria-selected", x === b));
+  $$("main section").forEach(s => s.hidden = s.id !== b.dataset.vista);
+  if (b.dataset.vista === "consultar") consultar();
+});
+
+// Autocompletado por número de control
+const inp = $("#numero_control"), sug = $("#sug"), form = $("#form"); let t, sel = -1;
+const hoy = () => new Date().toISOString().slice(0, 10);
+form.fecha_atencion.value = hoy();
+inp.addEventListener("input", () => {
+  clearTimeout(t);
+  const q = inp.value.trim();
+  if (!q) { sug.hidden = true; return; }
+  t = setTimeout(async () => {
+    const r = await (await fetch("/api/autocompletar?q=" + encodeURIComponent(q))).json();
+    sel = -1;
+    sug.innerHTML = r.map(a => `<div data-c="${esc(a.numero_control)}"><span>${esc(a.numero_control)}</span><small>${esc(a.apellido_paterno)} ${esc(a.apellido_materno)} ${esc(a.nombre)}</small></div>`).join("");
+    sug.hidden = !r.length;
+    $$("#sug div").forEach(d => d.onclick = () => elegir(d.dataset.c));
+  }, 120);
+});
+inp.addEventListener("keydown", e => {
+  const items = $$("#sug div");
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault(); if (!items.length) return;
+    sel = (sel + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length;
+    items.forEach((d, i) => d.classList.toggle("on", i === sel));
+  } else if (e.key === "Enter") {
+    e.preventDefault(); elegir(sel >= 0 ? items[sel].dataset.c : inp.value.trim());
+  } else if (e.key === "Escape") sug.hidden = true;
+});
+document.addEventListener("click", e => { if (!e.target.closest(".control")) sug.hidden = true; });
+
+async function elegir(c) {
+  inp.value = c; sug.hidden = true;
+  const r = await (await fetch("/api/alumno/" + encodeURIComponent(c))).json();
+  const est = $("#estado");
+  if (r.encontrado) {
+    for (const [k, v] of Object.entries(r.alumno)) if (form[k]) form[k].value = v;
+    est.className = "estado ok";
+    est.textContent = `Alumno encontrado. Tiene ${r.alumno.canalizaciones_anteriores} canalización(es) anterior(es).`;
+  } else {
+    form.reset(); form.fecha_atencion.value = hoy(); form.canalizaciones_anteriores.value = 0;
+    est.className = "estado nuevo";
+    est.textContent = "Alumno nuevo: captura sus datos y se guardará en la base.";
+  }
+  form.apellido_paterno.focus();
+}
+
+form.onsubmit = async e => {
+  e.preventDefault();
+  const datos = Object.fromEntries(new FormData(form));
+  datos.numero_control = inp.value.trim();
+  const r = await fetch("/api/canalizaciones", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(datos)});
+  const j = await r.json();
+  if (!r.ok) return aviso(j.error);
+  aviso("Canalización guardada");
+  const a = $("#pdfNuevo"); a.href = "/pdf/" + j.id; a.hidden = false;
+  $("#estado").textContent = "";
+};
+
+// Consultar
+const filtros = $("#filtros");
+const qs = () => new URLSearchParams([...new FormData(filtros)].filter(([, v]) => v.trim())).toString();
+async function consultar() {
+  $("#pdfLote").href = "/pdf-lote?" + qs();
+  const r = await (await fetch("/api/canalizaciones?" + qs())).json();
+  $("#resultados").innerHTML = r.length
+    ? `<table><thead><tr><th>Fecha</th><th>Control</th><th>Alumno</th><th>Sem.</th><th>Grupo</th><th>Turno</th><th>Motivo</th><th>Previas</th><th></th></tr></thead><tbody>` +
+      r.map(d => `<tr><td>${esc(d.fecha_atencion)}</td><td>${esc(d.numero_control)}</td><td>${esc(d.apellido_paterno)} ${esc(d.apellido_materno)} ${esc(d.nombre)}</td><td>${esc(d.semestre)}</td><td>${esc(d.grupo)}</td><td>${esc(d.turno)}</td><td>${esc(d.motivo)}</td><td>${esc(d.canalizaciones_anteriores)}</td><td><a href="/pdf/${d._id}">PDF</a></td></tr>`).join("") +
+      `</tbody></table><p style="margin:10px 0 0;color:var(--suave)">${r.length} resultado(s)</p>`
+    : `<div class="vacio">Ninguna canalización coincide. Prueba quitando algún filtro.</div>`;
+}
+filtros.onsubmit = e => { e.preventDefault(); consultar(); };
+$("#limpiar").onclick = () => { filtros.reset(); consultar(); };
+
+// Importar
+$("#formImp").onsubmit = async e => {
+  e.preventDefault();
+  const f = $("#archivo").files[0];
+  if (!f) return aviso("Elige un archivo primero");
+  const fd = new FormData(); fd.append("archivo", f);
+  $("#msgImp").innerHTML = `<div class="msg">Importando…</div>`;
+  const r = await fetch("/api/importar", {method: "POST", body: fd}); const j = await r.json();
+  $("#msgImp").innerHTML = `<div class="msg">${esc(j.mensaje || j.error)}</div>`;
+};
+</script>
+</body>
+</html>
